@@ -1,0 +1,155 @@
+import sys
+import math
+import random
+
+# Grab the pellets as fast as you can!
+
+# width: size of the grid
+# height: top left corner is (x=0, y=0)
+width, height = [int(i) for i in input().split()]
+squares_x = []
+squares_y = []
+for i in range(height):
+    row = input()  # one line of the grid: space " " is floor, pound "#" is wall
+    print(" R = "+row, file=sys.stderr)
+    for j in range(width) :
+        if row[j] == " ":
+            squares_x.append(j)
+            squares_y.append(i)
+            print(" Case = "+str(j)+" "+str(i), file=sys.stderr)
+
+
+# game loop
+while True:
+    my_score, opponent_score = [int(i) for i in input().split()]
+    visible_pac_count = int(input())  # all your pacs and enemy pacs in sight
+    mine_pacs = []
+    pacs_x = []
+    pacs_y = []
+    pacs_ability = []
+    pacs_turns  = []
+
+    for i in range(visible_pac_count):
+        # pac_id: pac number (unique within a team)
+        # mine: true if this pac is yours
+        # x: position in the grid
+        # y: position in the grid
+        # type_id: unused in wood leagues
+        # speed_turns_left: unused in wood leagues
+        # ability_cooldown: unused in wood leagues
+        pac_id, mine, x, y, type_id, speed_turns_left, ability_cooldown = input().split()
+        pac_id = int(pac_id)
+        mine = mine != "0"
+        x = int(x)
+        y = int(y)
+        speed_turns_left = int(speed_turns_left)
+        ability_cooldown = int(ability_cooldown)
+
+        if mine :
+            mine_pacs.append(str(pac_id))
+            pacs_x.append(x)
+            pacs_y.append(y)
+            pacs_ability.append(ability_cooldown)
+            pacs_turns.append(speed_turns_left)
+
+    visible_pellet_count = int(input())  # all pellets in sight
+
+    liste_x = []
+    liste_y = []
+    liste_value = []
+    liste_10 =[]
+    liste_1 =[]
+
+#Création liste des pellets à 10 points
+
+    for i in range(visible_pellet_count):
+        # value: amount of points this pellet is worth
+        x, y, value = [int(j) for j in input().split()]
+        liste_x.append(x)
+        liste_y.append(y)
+        liste_value.append(value)
+        if value == 10 :
+            liste_10.append(i)
+        else :
+            liste_1.append(i)    
+
+    # Write an action using print
+    # To debug: print("Debug messages...", file=sys.stderr)
+
+    # MOVE <pacId> <x> <y>
+    #print("MOVE 0 15 15")
+
+# Determiner si on speed ou move le pac
+
+# Calcul des positions ou envoyer chaque pacs
+
+    positions = [] 
+    i = 0
+    while i < len(mine_pacs) :
+        if  i  < len(liste_10)  :
+            j = int(liste_10[i])
+            x = int(liste_x[j]) 
+            y = int(liste_y[j])
+        elif len(liste_1) > 0 :                
+            k = random.randrange(len(liste_1))
+            j =int(liste_1[k]) 
+            #recherche si il y a un pellet à coté
+            found = False
+            n = 0
+            while not found and n < len(liste_1):
+                # Calcule distance entre pellet j et pac i
+                index = liste_1[n]
+                if (abs(liste_x[index] -pacs_x[i]) <2 ) and (abs(liste_y[index] -pacs_y[i]) <2):
+                    j = n
+                    x = int(liste_x[j]) 
+                    y = int(liste_y[j])
+                    found = True
+                n = n + 1
+                
+        else:
+            # pas de pastille visible,
+            x = random.randrange(width)
+            y = random.randrange(height)
+
+        position = str(x) + " " + str(y)
+
+        #Vérifier doublons
+        while  position in positions :
+            x = random.randrange(width)
+            y = random.randrange(height)
+            position = str(x) + " " + str(y)
+
+
+
+        positions.append(position)
+        i = i + 1 
+
+# Envoi ds la lgne de commmande d'un ordre par pac :  moves ou speed
+    i = 0
+    liste_cdes = []
+    commandes = ""
+    while i < len(mine_pacs) :
+        if  pacs_ability[i]  > 0:
+          commandes = commandes + "MOVE "+mine_pacs[i]+" "+positions[i]
+          liste_cdes.append('M')
+        else :
+            commandes = commandes + "SPEED "+mine_pacs[i] 
+            liste_cdes.append('S')
+        if i < len(mine_pacs) - 1 :
+            commandes= commandes +"|"
+        i = i + 1
+
+# envoi sur la sortie de la ligne de commandes
+    print(commandes)
+    
+#Sauvgardes des infos des pacs avant  application des commandes du tour
+old_nb_mine = len(mine_pacs)
+i  = 0
+old_id = []
+old_x  = []
+old_y  = []  
+while i < old_nb_mine :
+    old_id.append(mine_pacs[i])
+    old_x.append(pacs_x[i])
+    old_y.append(pacs_y[i])
+    i = i+ 1        
