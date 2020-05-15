@@ -1,4 +1,4 @@
-i_search = begin
+            i_search = begin
             while not found:
                 while not found and i_search <end:
                     i_dir = 0
